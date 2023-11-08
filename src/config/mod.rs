@@ -1,0 +1,54 @@
+use clap::Parser;
+use getters::Getters;
+use serde::Deserialize;
+
+use crate::{
+    constants::{MINE_MASK, MINE_REGEX, HENRY_SELECTOR, HENRY_REGEX, HENRY_MASK},
+    runners::rg::run_rg,
+};
+
+#[derive(Debug, Parser, Getters, Default)]
+pub struct Config {
+    #[use_deref]
+    #[arg(long = "mrp")]
+    mine_report: String,
+    #[use_deref]
+    #[arg(long = "trp")]
+    target_report: String,
+    #[use_deref]
+    #[arg(short, long = "tsl")]
+    target_selector: String,
+}
+
+impl Config {
+    pub fn get_mine_issues(&self) -> Vec<Issue> {
+        get_issues(self.mine_report(), MINE_REGEX, MINE_MASK)
+    }
+
+    pub fn get_target_issues(&self) -> Vec<Issue> {
+        let (mrg, mmk) = if self.target_selector() == HENRY_SELECTOR {
+            (HENRY_REGEX, HENRY_MASK)
+        } else {
+            todo!()
+        };
+        get_issues(self.target_report(), mrg, mmk)
+    }
+}
+
+pub fn get_issues(report: &str, rg: &str, mask: &str) -> Vec<Issue> {
+    run_rg(report, rg, mask)
+        .into_iter()
+        .map(|c| c as char)
+        .collect::<String>()
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect()
+}
+
+#[derive(Debug, Getters, Deserialize)]
+pub struct Issue {
+    severity: String,
+    name: String,
+    instances: usize,
+    description: Option<String>,
+}
