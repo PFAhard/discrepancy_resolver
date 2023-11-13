@@ -30,20 +30,18 @@ fn main() {
         // Lock the database for exclusive access
         db_for_ctrlc.callback(Database::store).unwrap();
 
-        let db = db_for_ctrlc.lock().unwrap();
-        db.store();
-        drop(db); // Explicitly drop the lock before exiting
-
         std::process::exit(0); // Exit the process
     })
     .expect("Error setting Ctrl-C handler");
 
     let (mine, mut target) = (config.get_mine_issues(), config.get_target_issues());
+
     target.reverse();
-    let mut index = 0;
+    target.truncate(target.len() - database.lock().unwrap().checkpoint());
 
     while let Some(issue) = target.pop() {
-        index += 1;
+        let index = *database.lock().unwrap().checkpoint();
+
         if database
             .callback_arg(Database::has_issue, issue.name())
             .unwrap()
@@ -89,7 +87,11 @@ fn main() {
                 );
                 let comment = uni_prompt!("Print comment for this fix:\n > ");
                 database
-                    .callback_arg2_mut(Database::add_fix_list, mine_issue, FixKey::MissingInstances(comment))
+                    .callback_arg2_mut(
+                        Database::add_fix_list,
+                        mine_issue,
+                        FixKey::MissingInstances(comment),
+                    )
                     .unwrap();
             }
         } else {
@@ -116,5 +118,8 @@ fn main() {
             );
         }
         println!();
+        database.callback_mut(Database::increment).unwrap();
     }
+
+    database.callback(Database::store).unwrap();
 }

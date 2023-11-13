@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     constants::{DATA_PATH, FIX_PATH},
+    prompt,
     utils::files::FileishExt,
 };
 
@@ -19,13 +20,24 @@ pub struct Database {
     inner: HashMap<String, Vec<String>>,
     #[serde(skip)]
     fix_list: Vec<(String, FixKey)>,
+    #[get_mut]
+    checkpoint: usize,
 }
 
 impl Database {
     pub fn open() -> Self {
         match DATA_PATH().try_readable() {
-            Ok(mut data_file) => match serde_json::from_reader(&mut data_file) {
-                Ok(db) => db,
+            Ok(mut data_file) => match serde_json::from_reader::<_, Database>(&mut data_file) {
+                Ok(mut db) => {
+                    if *db.checkpoint() != 0 {
+                        prompt!(
+                            "Checkpoint was found in database, skip {} first issues in target report (y), or set checkpoint to zero(n)", *db.checkpoint();
+                            {}
+                            {*db.checkpoint_mut() = 0;}
+                        )
+                    }
+                    db
+                }
                 Err(err) => unimplemented!("{}", err),
             },
             Err(_) => Database::default(),
@@ -45,7 +57,7 @@ impl Database {
                 let data = self.fix_list().iter().enumerate().fold(
                     String::new(),
                     |mut output, (i, (item, key))| {
-                        let _ = writeln!(output, "{}. {} [fix key: {:?}]", i, item, key);
+                        let _ = writeln!(output, "{}. {} \n\t[fix key: {:?}]\n", i, item, key);
                         output
                     },
                 );
@@ -79,6 +91,14 @@ impl Database {
         } else {
             self.inner.insert(mine.to_owned(), vec![target.to_owned()]);
         }
+    }
+
+    pub fn set_checkpoint(&mut self, checkpoint: usize) {
+        self.checkpoint = checkpoint;
+    }
+
+    pub fn increment(&mut self) {
+        self.checkpoint += 1;
     }
 }
 
@@ -195,7 +215,6 @@ impl DatabaseExt for Arc<Mutex<Database>> {
         Ok(c(&mut db, arg, arg2))
     }
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum FixKey {
