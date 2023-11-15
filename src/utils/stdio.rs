@@ -13,7 +13,18 @@ macro_rules! prompt {
         match input.to_lowercase().trim() {
             "yes" | "y" => $yes,
             "no" | "n" => $no,
-            _ => unreachable!("Answer '{}' is not recognized", input.trim()),
+            _ => {
+                println!("Answer '{}' is not recognized", input.trim());
+                unsafe {
+                    // Generate a CTRL+C event for the current process group
+                    if  winapi::um::wincon::GenerateConsoleCtrlEvent( winapi::um::wincon::CTRL_C_EVENT, 0) == 0 {
+                        eprintln!("Failed to generate CTRL+C event.");
+                    } else {
+                        println!("CTRL+C event generated successfully.");
+                    }
+                }
+
+            },
         }
     }};
 }

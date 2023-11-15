@@ -3,7 +3,10 @@ use getters::Getters;
 use serde::Deserialize;
 
 use crate::{
-    constants::{MINE_MASK, MINE_REGEX, HENRY_SELECTOR, HENRY_REGEX, HENRY_MASK},
+    constants::{
+        HENRY_MASK, HENRY_REGEX, HENRY_SELECTOR, HOUND_MASK, HOUND_REGEX, HOUND_SELECTOR,
+        MINE_MASK, MINE_REGEX,
+    },
     runners::rg::run_rg,
 };
 
@@ -28,6 +31,8 @@ impl Config {
     pub fn get_target_issues(&self) -> Vec<Issue> {
         let (mrg, mmk) = if self.target_selector() == HENRY_SELECTOR {
             (HENRY_REGEX, HENRY_MASK)
+        } else if self.target_selector() == HOUND_SELECTOR {
+            (HOUND_REGEX, HOUND_MASK)
         } else {
             todo!()
         };

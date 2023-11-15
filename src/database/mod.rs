@@ -31,7 +31,7 @@ impl Database {
                 Ok(mut db) => {
                     if *db.checkpoint() != 0 {
                         prompt!(
-                            "Checkpoint was found in database, skip {} first issues in target report (y), or set checkpoint to zero(n)", *db.checkpoint();
+                            "Checkpoint was found in database, skip {} first issues in target report (y), or set checkpoint to zero(n)\n > ", *db.checkpoint();
                             {}
                             {*db.checkpoint_mut() = 0;}
                         )
