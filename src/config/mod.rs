@@ -1,5 +1,5 @@
 use clap::Parser;
-use getters::Getters;
+use getters0::Getters;
 use serde::Deserialize;
 
 use crate::{
@@ -7,6 +7,7 @@ use crate::{
         HENRY_MASK, HENRY_REGEX, HENRY_SELECTOR, HOUND_MASK, HOUND_REGEX, HOUND_SELECTOR,
         MINE_MASK, MINE_REGEX,
     },
+    error_handler,
     runners::rg::run_rg,
 };
 
@@ -46,7 +47,7 @@ pub fn get_issues(report: &str, rg: &str, mask: &str) -> Vec<Issue> {
         .map(|c| c as char)
         .collect::<String>()
         .lines()
-        .map(|line| serde_json::from_str(line).unwrap())
+        .map(error_handler::from_str::<Issue>)
         .collect()
 }
 

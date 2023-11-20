@@ -1,3 +1,4 @@
+#![feature(io_error_more)]
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc, Mutex,
@@ -14,6 +15,7 @@ pub mod constants;
 pub mod database;
 pub mod runners;
 pub mod utils;
+pub mod error_handler;
 
 fn main() {
     let running = Arc::new(AtomicBool::new(true));

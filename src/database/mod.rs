@@ -5,7 +5,7 @@ use std::{
     sync::{Arc, Mutex, MutexGuard},
 };
 
-use getters::Getters;
+use getters0::Getters;
 use serde::{Deserialize, Serialize};
 
 use crate::{

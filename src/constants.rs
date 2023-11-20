@@ -32,7 +32,7 @@ pub const MINE_MASK: &str = r#"{"severity": "$1", "name": "$2", "instances": $3}
 
 // henry
 pub const HENRY_SELECTOR: &str = "henry";
-pub const HENRY_REGEX: &str = ".*?\\[\\[([A-Z])&#x2011;[0-9]+\\]\\]\\(#[a-z][0-9]+?.*?\\) \\| ~?~?(.*?)~?~? \\| ([0-9]+) \\|.*";
+pub const HENRY_REGEX: &str = "\\| \\[\\[([A-Z])&#x2011;[0-9]+\\]\\(#[0-9]+\\)\\] \\| (.*?) \\| ([0-9]+)\\| [0-9]+\\|";
 pub const HENRY_MASK: &str = "{\"severity\": \"$1\", \"name\": \"$2\", \"instances\": $3}";
 
 // Hound 
